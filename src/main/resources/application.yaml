@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: rag-system
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/help_center?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: wbq1518
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  ai:
+    dashscope:
+      api-key: ${AI_DASHSCOPE_API_KEY}
+      chat:
+        options:
+          model: qwen-plus
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+help-center:
+  admin-token: ${HELP_CENTER_ADMIN_TOKEN:dev-admin-token}

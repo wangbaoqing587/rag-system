@@ -1,0 +1,32 @@
+:root {
+  --color-primary: #0071e3;
+  --color-primary-user-bubble: color-mix(in srgb, #64a5e4 52%, #ffffff);
+  --color-primary-soft: color-mix(in srgb, var(--color-primary) 12%, #ffffff);
+  --color-primary-soft-border: color-mix(in srgb, var(--color-primary) 20%, #ffffff);
+  --color-primary-gradient-start: color-mix(in srgb, var(--color-primary) 72%, #ffffff);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  background: #f5f6f8;
+  color: #1a1a1a;
+}
+
+button {
+  font: inherit;
+}
+
+input,
+textarea {
+  font: inherit;
+}
