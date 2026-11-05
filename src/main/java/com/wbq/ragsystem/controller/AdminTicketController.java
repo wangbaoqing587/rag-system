@@ -86,21 +86,8 @@ public class AdminTicketController {
         m.put("locale", t.getLocale());
         m.put("updatedAt", t.getUpdatedAt());
         m.put("chatTranscript", parseTranscript(t.getChatTranscript()));
-        m.put("attachments", parseAttachments(t.getAttachments()));
+        m.put("attachments", t.getAttachments() != null ? t.getAttachments() : List.of());
         return m;
-    }
-
-    private List<String> parseAttachments(String json) {
-        if (json == null || json.isBlank()) {
-            return List.of();
-        }
-        try {
-            return objectMapper.readValue(json, new TypeReference<>() {
-            });
-        } catch (Exception e) {
-            log.warn("parse attachments failed", e);
-            return List.of();
-        }
     }
 
     private List<Map<String, Object>> parseTranscript(String json) {

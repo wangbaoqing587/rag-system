@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -39,9 +40,9 @@ public class HelpCenterTicket {
     @Column(length = 64)
     private String contact;
 
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Convert(converter = StringListJsonConverter.class)
     @Column(columnDefinition = "json")
-    private String attachments;
+    private List<String> attachments;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "chat_transcript", columnDefinition = "json")

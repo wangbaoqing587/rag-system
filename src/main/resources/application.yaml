@@ -20,5 +20,9 @@ server:
   port: 8123
   servlet:
     context-path: /api
+  tomcat:
+    max-http-post-size: 26214400
 help-center:
-  admin-token: ${HELP_CENTER_ADMIN_TOKEN:dev-admin-token}
+  admin:
+    username: ${HELP_CENTER_ADMIN_USERNAME:admin}
+    password: ${HELP_CENTER_ADMIN_PASSWORD:admin}

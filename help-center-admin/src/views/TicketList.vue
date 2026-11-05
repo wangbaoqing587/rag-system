@@ -64,7 +64,7 @@ async function load() {
     })
     rows.value = data.content || []
   } catch (e) {
-    error.value = e.response?.status === 401 ? '未授权，请配置 Admin Token' : e.message
+    error.value = e.response?.status === 401 ? '未授权，请重新登录' : e.message
   }
 }
 

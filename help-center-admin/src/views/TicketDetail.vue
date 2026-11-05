@@ -19,9 +19,10 @@
       <dt>创建时间</dt>
       <dd>{{ formatTime(ticket.createdAt) }}</dd>
     </dl>
-    <div v-if="ticket.attachments?.length" class="attachments">
+    <div class="attachments">
       <h3>附图</h3>
-      <div class="grid">
+      <p v-if="!ticket.attachments?.length" class="muted">无附图</p>
+      <div v-else class="grid">
         <a
           v-for="(src, i) in ticket.attachments"
           :key="i"
@@ -147,6 +148,10 @@ button {
 }
 .attachments {
   margin: 16px 0;
+}
+.muted {
+  color: #999;
+  font-size: 13px;
 }
 .grid {
   display: flex;

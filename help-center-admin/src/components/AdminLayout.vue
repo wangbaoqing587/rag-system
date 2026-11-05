@@ -3,10 +3,7 @@
     <aside class="side">
       <div class="brand">帮助中心 · 工单</div>
       <router-link to="/">工单列表</router-link>
-      <div class="token">
-        <label>Admin Token</label>
-        <input v-model="token" type="password" @change="saveToken" />
-      </div>
+      <button type="button" class="logout" @click="logout">退出登录</button>
     </aside>
     <main class="main">
       <slot />
@@ -15,20 +12,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { TOKEN_KEY } from '../api/request.js'
 
-const token = ref('')
+const router = useRouter()
 
-onMounted(() => {
-  token.value = localStorage.getItem(TOKEN_KEY) || 'dev-admin-token'
-  if (!localStorage.getItem(TOKEN_KEY)) {
-    localStorage.setItem(TOKEN_KEY, token.value)
-  }
-})
-
-function saveToken() {
-  localStorage.setItem(TOKEN_KEY, token.value)
+function logout() {
+  localStorage.removeItem(TOKEN_KEY)
+  router.push('/login')
 }
 </script>
 
@@ -53,14 +44,16 @@ a {
   text-decoration: none;
   margin-bottom: 12px;
 }
-.token {
+.logout {
   margin-top: 32px;
-  font-size: 12px;
-}
-.token input {
   width: 100%;
-  margin-top: 6px;
-  padding: 6px;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
 }
 .main {
   flex: 1;

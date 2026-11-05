@@ -43,6 +43,7 @@
 import { ref, watch } from 'vue'
 import { createTicket } from '../api/ticket.js'
 import { TICKET_CATEGORIES } from '../constants/ticketCategories.js'
+import { compressImageFile } from '../utils/compressImage.js'
 
 const props = defineProps({
   visible: Boolean,
@@ -85,21 +86,22 @@ function removeImage(idx) {
   images.value.splice(idx, 1)
 }
 
-function onPickImages(e) {
+async function onPickImages(e) {
   const files = Array.from(e.target.files || [])
   e.target.value = ''
   const remain = 4 - images.value.length
   if (remain <= 0) return
-  const picked = files.slice(0, remain)
+  const picked = files.slice(0, remain).filter((f) => f.type.startsWith('image/'))
   for (const file of picked) {
-    if (!file.type.startsWith('image/')) continue
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (images.value.length < 4 && typeof reader.result === 'string') {
-        images.value.push(reader.result)
+    if (images.value.length >= 4) break
+    try {
+      const dataUrl = await compressImageFile(file)
+      if (images.value.length < 4) {
+        images.value.push(dataUrl)
       }
+    } catch {
+      error.value = '图片处理失败，请换一张试试'
     }
-    reader.readAsDataURL(file)
   }
 }
 

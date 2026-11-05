@@ -56,13 +56,15 @@ public class HelpCenterTicketService {
         ticket.setStatus(TicketStatus.PENDING.name());
         try {
             ticket.setChatTranscript(objectMapper.writeValueAsString(req.chatTranscript()));
-            ticket.setAttachments(objectMapper.writeValueAsString(attachments));
+            ticket.setAttachments(attachments);
         } catch (JsonProcessingException e) {
             log.warn("create ticket invalid payload userId={}", req.userId(), e);
             throw new IllegalArgumentException("ticket payload invalid");
         }
         HelpCenterTicket saved = repository.save(ticket);
-        log.info("ticket created ticketNo={} id={} userId={}", saved.getTicketNo(), saved.getId(), saved.getUserId());
+        log.info("ticket created ticketNo={} id={} userId={} attachmentCount={}",
+                saved.getTicketNo(), saved.getId(), saved.getUserId(),
+                attachments.size());
         return toCreateResponse(saved);
     }
 
