@@ -6,7 +6,8 @@ import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugment
 public class HelpCenterQueryAugmenter {
     public static ContextualQueryAugmenter createInstance() {
         PromptTemplate emptyContextPromptTemplate = new PromptTemplate("""
-                未在帮助中心找到相关内容。请简要说明无法从文档回答，并建议用户提交工单由人工跟进。
+                未检索到任何帮助文档。你必须只输出下面这一行，不要任何其他文字、标点、解释或空行：
+                [TICKET_OFFER]
                 """);
         return ContextualQueryAugmenter.builder()
                 .allowEmptyContext(false)

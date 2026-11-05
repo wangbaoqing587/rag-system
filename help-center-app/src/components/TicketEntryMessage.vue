@@ -18,7 +18,7 @@ import ChatAvatar from './ChatAvatar.vue'
 const props = defineProps({
   text: {
     type: String,
-    default: '暂未在帮助中心找到匹配说明，可提交反馈由人工跟进',
+    default: '抱歉，我暂时给不了更合适的指引。如果需要人工协助，提交反馈后客服会继续跟进。',
   },
   timestamp: { type: String, required: true },
 })

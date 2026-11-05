@@ -42,6 +42,8 @@ import TicketSubmitSheet from '../components/TicketSubmitSheet.vue'
 import { streamChat } from '../api/helpCenter.js'
 import { getOrCreateChatId } from '../utils/mockUser.js'
 
+const TICKET_OFFER_MARKER = '[TICKET_OFFER]'
+
 const props = defineProps({
   user: { type: Object, required: true },
 })
@@ -80,7 +82,7 @@ const transcriptForSubmit = computed(() => {
     } else if (item.type === 'ticket_entry') {
       list.push({
         role: 'assistant',
-        content: item.content || '暂未在帮助中心找到匹配说明，可提交反馈由人工跟进',
+        content: item.content || '抱歉，我暂时给不了更合适的指引。如果需要人工协助，提交反馈后客服会继续跟进。',
         timestamp: item.timestamp,
       })
     }
@@ -101,6 +103,19 @@ function showToast(msg) {
   setTimeout(() => {
     toast.value = ''
   }, 2500)
+}
+
+function compactText(text) {
+  return (text || '').replace(/\s+/g, '')
+}
+
+function isTicketOfferText(text) {
+  return compactText(text) === TICKET_OFFER_MARKER
+}
+
+function isTicketOfferPrefix(text) {
+  const normalized = compactText(text)
+  return normalized.length > 0 && TICKET_OFFER_MARKER.startsWith(normalized)
 }
 
 function sendUserMessage(text) {
@@ -157,6 +172,7 @@ function startAssistantReply(message) {
 
   let latestSuggested = ''
   let ended = false
+  let acc = ''
 
   const finishStream = () => {
     if (ended || gen !== activeStreamGen) return
@@ -177,8 +193,14 @@ function startAssistantReply(message) {
     },
     {
       onChunk: (chunk) => {
+        acc += chunk
         const a = ensureAssistant()
-        if (a) a.content += chunk
+        if (!a) return
+        if (isTicketOfferText(acc) || isTicketOfferPrefix(acc)) {
+          a.content = ''
+        } else {
+          a.content = acc
+        }
         scrollBottom()
       },
       onSources: (payload) => {
@@ -194,12 +216,24 @@ function startAssistantReply(message) {
           type: 'ticket_entry',
           timestamp: new Date().toISOString(),
           suggestedDescription: latestSuggested,
-          content: '暂未在帮助中心找到匹配说明，可提交反馈由人工跟进',
+          content: '抱歉，我暂时给不了更合适的指引。如果需要人工协助，提交反馈后客服会继续跟进。',
         })
         pendingSuggested.value = latestSuggested
         finishStream()
       },
       onDone: () => {
+        if (isTicketOfferText(acc)) {
+          latestSuggested = message
+          removeAssistantIfEmpty()
+          items.value.push({
+            id: ++idSeq,
+            type: 'ticket_entry',
+            timestamp: new Date().toISOString(),
+            suggestedDescription: latestSuggested,
+            content: '抱歉，我暂时给不了更合适的指引。如果需要人工协助，提交反馈后客服会继续跟进。',
+          })
+          pendingSuggested.value = latestSuggested
+        }
         finishStream()
       },
       onError: (e) => {

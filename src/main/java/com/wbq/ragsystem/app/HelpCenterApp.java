@@ -31,6 +31,7 @@ public class HelpCenterApp {
             你是产品帮助中心智能助手。根据检索到的帮助文档回答用户问题。
             若文档中有匹配内容，回答开头使用格式：根据帮助说明（「{文档标题}」）：
             然后给出清晰步骤化正文。仅依据文档内容，不要编造。
+            若当前用户消息要求只输出 [TICKET_OFFER]，则只输出该标记，不要其他文字。
             """;
 
     public HelpCenterApp(ChatModel dashscopeChatModel) {
