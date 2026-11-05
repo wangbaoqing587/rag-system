@@ -1,17 +1,30 @@
 <template>
   <div class="page">
-    <form class="card" @submit.prevent="submit">
-      <h1>帮助中心 · 管理登录</h1>
-      <label>
-        用户名
-        <input v-model="username" autocomplete="username" />
-      </label>
-      <label>
-        密码
-        <input v-model="password" type="password" autocomplete="current-password" />
-      </label>
-      <p v-if="error" class="error">{{ error }}</p>
-      <button type="submit" :disabled="loading">{{ loading ? '登录中…' : '登录' }}</button>
+    <form class="card form" @submit.prevent="submit">
+      <div class="form-brand">
+        <span class="mark">HC</span>
+        <div>
+          <h1>帮助中心管理</h1>
+          <p>登录后处理用户反馈工单</p>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">用户名</span>
+        <input v-model="username" class="input" autocomplete="username" />
+      </div>
+      <div class="field">
+        <span class="field-label">密码</span>
+        <input
+          v-model="password"
+          class="input"
+          type="password"
+          autocomplete="current-password"
+        />
+      </div>
+      <p v-if="error" class="alert alert-error">{{ error }}</p>
+      <button type="submit" class="btn btn-primary submit" :disabled="loading">
+        {{ loading ? '登录中…' : '登录' }}
+      </button>
     </form>
   </div>
 </template>
@@ -52,49 +65,54 @@ async function submit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #001529;
+  padding: 24px;
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
 }
-.card {
-  width: 320px;
-  padding: 32px 28px;
-  background: #fff;
-  border-radius: 8px;
+
+.form {
+  width: 100%;
+  max-width: 400px;
+  padding: 36px 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
-h1 {
-  margin: 0 0 8px;
-  font-size: 18px;
-  text-align: center;
-}
-label {
+
+.form-brand {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 8px;
 }
-input {
-  padding: 8px 10px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-}
-button {
-  margin-top: 8px;
-  padding: 10px;
-  background: #0071e3;
+
+.mark {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
   color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
 }
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.error {
+
+.form-brand h1 {
   margin: 0;
-  color: #cf1322;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.form-brand p {
+  margin: 4px 0 0;
   font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.submit {
+  width: 100%;
+  padding: 11px;
+  margin-top: 4px;
 }
 </style>
