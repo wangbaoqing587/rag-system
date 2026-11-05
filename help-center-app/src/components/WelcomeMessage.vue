@@ -3,8 +3,9 @@
     <ChatAvatar role="assistant" />
     <div class="body">
       <div class="bubble">
-        <p class="lead">你好，我是帮助中心智能助手。</p>
-        <p>可解答功能用法、计费与常见故障；未命中文档时可提交工单由人工跟进。</p>
+        <p class="lead">{{ WELCOME_INTRO }}</p>
+        <p>{{ WELCOME_SCOPE }}</p>
+        <p>{{ WELCOME_GUIDE }}</p>
       </div>
       <span class="time">{{ timeLabel }}</span>
     </div>
@@ -14,6 +15,7 @@
 <script setup>
 import { computed } from 'vue'
 import ChatAvatar from './ChatAvatar.vue'
+import { WELCOME_INTRO, WELCOME_SCOPE, WELCOME_GUIDE } from '../constants/welcomeCopy.js'
 
 const props = defineProps({
   timestamp: { type: String, required: true },
@@ -50,12 +52,16 @@ function formatTime(iso) {
   line-height: 1.5;
 }
 .lead {
-  margin: 0 0 6px;
+  margin: 0;
   font-weight: 500;
+  color: #444;
 }
 p {
   margin: 0;
   color: #444;
+}
+.bubble p + p {
+  margin-top: 6px;
 }
 .time {
   display: block;

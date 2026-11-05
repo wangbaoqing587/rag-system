@@ -14,7 +14,7 @@
       </template>
     </div>
     <div class="bottom">
-      <FaqQuickChips @pick="sendUserMessage" />
+      <FaqQuickChips @pick="sendUserMessage" @feedback="openTicket('')" />
       <ChatInput :disabled="loading" :streaming="streaming" @send="sendUserMessage" @stop="stopStream" />
     </div>
     <TicketSubmitSheet
@@ -41,6 +41,7 @@ import ChatInput from '../components/ChatInput.vue'
 import TicketSubmitSheet from '../components/TicketSubmitSheet.vue'
 import { streamChat } from '../api/helpCenter.js'
 import { getOrCreateChatId } from '../utils/mockUser.js'
+import { WELCOME_TRANSCRIPT } from '../constants/welcomeCopy.js'
 
 const TICKET_OFFER_MARKER = '[TICKET_OFFER]'
 
@@ -67,8 +68,7 @@ const transcriptForSubmit = computed(() => {
   const list = [
     {
       role: 'assistant',
-      content:
-        '你好，我是帮助中心智能助手。可解答功能用法、计费与常见故障；未命中文档时可提交工单由人工跟进。',
+      content: WELCOME_TRANSCRIPT,
       timestamp: welcomeTs.value,
     },
   ]

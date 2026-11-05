@@ -1,11 +1,12 @@
 <template>
   <div class="chips">
+    <button type="button" class="feedback" @click="$emit('feedback')">提交反馈</button>
     <button v-for="q in questions" :key="q" type="button" @click="$emit('pick', q)">{{ q }}</button>
   </div>
 </template>
 
 <script setup>
-defineEmits(['pick'])
+defineEmits(['pick', 'feedback'])
 
 const questions = [
   '如何修改绑定手机号？',
@@ -31,6 +32,11 @@ const questions = [
 }
 .chips::-webkit-scrollbar {
   display: none;
+}
+.chips button.feedback {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  font-weight: 500;
 }
 .chips button {
   border: 1px solid var(--color-primary-soft-border);
