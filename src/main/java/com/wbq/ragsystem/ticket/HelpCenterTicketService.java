@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,22 +27,39 @@ public class HelpCenterTicketService {
     private final HelpCenterTicketRepository repository;
     private final ObjectMapper objectMapper;
 
+    private static final int MAX_ATTACHMENTS = 4;
+    private static final int MAX_ATTACHMENT_CHARS = 1_500_000;
+
     @Transactional
     public Map<String, Object> create(CreateTicketRequest req) {
+        if (!TicketCategory.isValid(req.category())) {
+            throw new IllegalArgumentException("category invalid");
+        }
+        if (req.description() == null || req.description().isBlank()) {
+            throw new IllegalArgumentException("description required");
+        }
+        if (req.contact() == null || req.contact().isBlank()) {
+            throw new IllegalArgumentException("contact required");
+        }
+        List<String> attachments = normalizeAttachments(req.attachments());
+
         HelpCenterTicket ticket = new HelpCenterTicket();
         ticket.setTicketNo(nextTicketNo());
         ticket.setUserId(req.userId());
         ticket.setUserName(req.userName());
         ticket.setChatId(req.chatId());
-        ticket.setDescription(req.description());
+        ticket.setCategory(req.category());
+        ticket.setDescription(req.description().trim());
+        ticket.setContact(req.contact().trim());
         ticket.setProduct(req.product());
         ticket.setLocale(req.locale());
         ticket.setStatus(TicketStatus.PENDING.name());
         try {
             ticket.setChatTranscript(objectMapper.writeValueAsString(req.chatTranscript()));
+            ticket.setAttachments(objectMapper.writeValueAsString(attachments));
         } catch (JsonProcessingException e) {
-            log.warn("create ticket invalid chatTranscript userId={}", req.userId(), e);
-            throw new IllegalArgumentException("chatTranscript invalid");
+            log.warn("create ticket invalid payload userId={}", req.userId(), e);
+            throw new IllegalArgumentException("ticket payload invalid");
         }
         HelpCenterTicket saved = repository.save(ticket);
         log.info("ticket created ticketNo={} id={} userId={}", saved.getTicketNo(), saved.getId(), saved.getUserId());
@@ -91,5 +109,23 @@ public class HelpCenterTicketService {
 
     private String emptyToNull(String s) {
         return s == null || s.isBlank() ? null : s;
+    }
+
+    private List<String> normalizeAttachments(List<String> attachments) {
+        if (attachments == null || attachments.isEmpty()) {
+            return List.of();
+        }
+        if (attachments.size() > MAX_ATTACHMENTS) {
+            throw new IllegalArgumentException("attachments exceed limit");
+        }
+        for (String item : attachments) {
+            if (item == null || item.isBlank()) {
+                throw new IllegalArgumentException("attachment invalid");
+            }
+            if (item.length() > MAX_ATTACHMENT_CHARS) {
+                throw new IllegalArgumentException("attachment too large");
+            }
+        }
+        return List.copyOf(attachments);
     }
 }

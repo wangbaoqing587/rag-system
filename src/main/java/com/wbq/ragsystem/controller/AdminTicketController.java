@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wbq.ragsystem.ticket.HelpCenterTicket;
 import com.wbq.ragsystem.ticket.HelpCenterTicketService;
+import com.wbq.ragsystem.ticket.TicketCategory;
 import com.wbq.ragsystem.ticket.TicketNotFoundException;
 import com.wbq.ragsystem.ticket.UpdateTicketRequest;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,9 @@ public class AdminTicketController {
         m.put("ticketNo", t.getTicketNo());
         m.put("userId", t.getUserId());
         m.put("userName", t.getUserName());
+        m.put("category", t.getCategory());
+        m.put("categoryLabel", TicketCategory.labelOf(t.getCategory()));
+        m.put("contact", t.getContact());
         m.put("description", t.getDescription());
         m.put("status", t.getStatus());
         m.put("createdAt", t.getCreatedAt());
@@ -82,7 +86,21 @@ public class AdminTicketController {
         m.put("locale", t.getLocale());
         m.put("updatedAt", t.getUpdatedAt());
         m.put("chatTranscript", parseTranscript(t.getChatTranscript()));
+        m.put("attachments", parseAttachments(t.getAttachments()));
         return m;
+    }
+
+    private List<String> parseAttachments(String json) {
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<>() {
+            });
+        } catch (Exception e) {
+            log.warn("parse attachments failed", e);
+            return List.of();
+        }
     }
 
     private List<Map<String, Object>> parseTranscript(String json) {

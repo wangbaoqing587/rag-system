@@ -15,7 +15,9 @@ public interface HelpCenterTicketRepository extends JpaRepository<HelpCenterTick
               :keyword IS NULL OR :keyword = '' OR
               LOWER(t.ticketNo) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
               LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-              LOWER(t.userId) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              LOWER(t.userId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+              LOWER(t.contact) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+              LOWER(t.category) LIKE LOWER(CONCAT('%', :keyword, '%'))
             )
             ORDER BY t.createdAt DESC
             """)

@@ -4,7 +4,7 @@
     <div class="content">
       <div class="bubble">
         <p>{{ text }}</p>
-        <button type="button" class="cta" @click="$emit('submit-ticket')">提交工单</button>
+        <button type="button" class="cta" @click="$emit('submit-ticket')">提交反馈</button>
       </div>
       <span class="time">{{ timeLabel }}</span>
     </div>

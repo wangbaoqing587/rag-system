@@ -6,9 +6,11 @@ public record CreateTicketRequest(
         String userId,
         String userName,
         String chatId,
+        String category,
         String description,
+        String contact,
+        List<String> attachments,
         List<TranscriptItem> chatTranscript,
         String product,
-        String locale,
-        String contact) {
+        String locale) {
 }

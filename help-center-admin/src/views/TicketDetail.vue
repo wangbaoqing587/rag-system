@@ -10,11 +10,29 @@
       <dd>{{ ticket.userName }}</dd>
       <dt>chatId</dt>
       <dd>{{ ticket.chatId }}</dd>
+      <dt>问题分类</dt>
+      <dd>{{ ticket.categoryLabel || ticket.category || '—' }}</dd>
+      <dt>联系方式</dt>
+      <dd>{{ ticket.contact || '—' }}</dd>
       <dt>问题描述</dt>
       <dd>{{ ticket.description }}</dd>
       <dt>创建时间</dt>
       <dd>{{ formatTime(ticket.createdAt) }}</dd>
     </dl>
+    <div v-if="ticket.attachments?.length" class="attachments">
+      <h3>附图</h3>
+      <div class="grid">
+        <a
+          v-for="(src, i) in ticket.attachments"
+          :key="i"
+          :href="src"
+          target="_blank"
+          rel="noopener"
+        >
+          <img :src="src" alt="" />
+        </a>
+      </div>
+    </div>
     <h3>聊天记录</h3>
     <ul class="timeline">
       <li v-for="(m, i) in ticket.chatTranscript" :key="i">
@@ -126,5 +144,20 @@ button {
 }
 .msg {
   color: #389e0d;
+}
+.attachments {
+  margin: 16px 0;
+}
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.grid img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
 }
 </style>

@@ -23,4 +23,10 @@ public class TicketController {
         log.info("create ticket userId={} chatId={}", body.userId(), body.chatId());
         return ticketService.create(body);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> badRequest(IllegalArgumentException e) {
+        return Map.of("message", e.getMessage());
+    }
 }

@@ -8,7 +8,7 @@
         <option value="RESOLVED">已解决</option>
         <option value="CLOSED">已关闭</option>
       </select>
-      <input v-model="keyword" placeholder="工单号 / 描述 / userId" @keyup.enter="load" />
+      <input v-model="keyword" placeholder="工单号 / 描述 / 联系方式 / userId" @keyup.enter="load" />
       <button type="button" @click="load">查询</button>
     </div>
     <table>
@@ -16,7 +16,9 @@
         <tr>
           <th>工单号</th>
           <th>用户</th>
+          <th>分类</th>
           <th>描述</th>
+          <th>联系方式</th>
           <th>状态</th>
           <th>创建时间</th>
           <th></th>
@@ -26,7 +28,9 @@
         <tr v-for="row in rows" :key="row.id">
           <td>{{ row.ticketNo }}</td>
           <td>{{ row.userId }}<br /><small>{{ row.userName }}</small></td>
+          <td>{{ row.categoryLabel || row.category || '—' }}</td>
           <td class="desc">{{ row.description }}</td>
+          <td>{{ row.contact || '—' }}</td>
           <td><StatusTag :status="row.status" /></td>
           <td>{{ formatTime(row.createdAt) }}</td>
           <td><router-link :to="`/tickets/${row.id}`">详情</router-link></td>

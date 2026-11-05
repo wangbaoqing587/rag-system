@@ -33,6 +33,16 @@ public class HelpCenterTicket {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
+    @Column(length = 32)
+    private String category;
+
+    @Column(length = 64)
+    private String contact;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private String attachments;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "chat_transcript", columnDefinition = "json")
     private String chatTranscript;
