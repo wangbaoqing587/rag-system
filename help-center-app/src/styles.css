@@ -4,6 +4,8 @@
   --color-primary-soft: color-mix(in srgb, var(--color-primary) 12%, #ffffff);
   --color-primary-soft-border: color-mix(in srgb, var(--color-primary) 20%, #ffffff);
   --color-primary-gradient-start: color-mix(in srgb, var(--color-primary) 72%, #ffffff);
+  --chat-avatar-size: 36px;
+  --chat-bubble-top-offset: calc(var(--chat-avatar-size) / 4);
 }
 
 *,

@@ -22,8 +22,8 @@ const iconSrc = computed(() => (props.role === 'user' ? icUser : icAssistant))
 
 <style scoped>
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: var(--chat-avatar-size);
+  height: var(--chat-avatar-size);
   border-radius: 50%;
   background: #e4e6eb;
   display: flex;

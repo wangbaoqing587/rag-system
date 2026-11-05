@@ -39,6 +39,7 @@ const timeLabel = computed(() => {
 }
 .content {
   max-width: 85%;
+  margin-top: var(--chat-bubble-top-offset);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

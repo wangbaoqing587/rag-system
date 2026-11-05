@@ -6,7 +6,7 @@
         <div v-if="message.role === 'user'" class="text">
           {{ message.content }}<span v-if="message.streaming" class="cursor">▍</span>
         </div>
-        <div v-else class="text md-body" v-html="htmlContent"></div>
+        <div v-else class="md-body" v-html="htmlContent"></div>
         <span v-if="message.role !== 'user' && message.streaming" class="cursor inline-cursor">▍</span>
       </div>
       <SourceList v-if="message.sources?.length" :sources="message.sources" />
@@ -44,6 +44,7 @@ const timeLabel = computed(() => {
 }
 .content {
   max-width: 85%;
+  margin-top: var(--chat-bubble-top-offset);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -59,14 +60,20 @@ const timeLabel = computed(() => {
   font-size: 14px;
   line-height: 1.5;
 }
-.text {
+.row.user .text {
   white-space: pre-wrap;
 }
 .md-body :deep(p) {
   margin: 0 0 0.6em;
 }
-.md-body :deep(p:last-child) {
+.md-body :deep(p:last-child),
+.md-body :deep(ul:last-child),
+.md-body :deep(ol:last-child),
+.md-body :deep(blockquote:last-child) {
   margin-bottom: 0;
+}
+.md-body :deep(p:empty) {
+  display: none;
 }
 .md-body :deep(strong) {
   font-weight: 600;
@@ -75,6 +82,9 @@ const timeLabel = computed(() => {
 .md-body :deep(ol) {
   margin: 0.4em 0 0.6em;
   padding-left: 1.25em;
+}
+.md-body :deep(li:last-child) {
+  margin-bottom: 0;
 }
 .md-body :deep(blockquote) {
   margin: 0.6em 0 0;
