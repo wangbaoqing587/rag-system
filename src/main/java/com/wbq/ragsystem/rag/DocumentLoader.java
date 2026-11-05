@@ -25,7 +25,7 @@ class DocumentLoader {
     public List<Document> loadMarkdowns() {
         List<Document> allDocuments = new ArrayList<>();
         try {
-            Resource[] resources = resourcePatternResolver.getResources("classpath:document/help-center-*.md");
+            Resource[] resources = resourcePatternResolver.getResources("classpath:document/常见问题-*.md");
             for (Resource resource : resources) {
                 String fileName = resource.getFilename();
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
@@ -39,7 +39,7 @@ class DocumentLoader {
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
                 allDocuments.addAll(reader.get());
             }
-            log.info("loaded help-center markdown files={} documentSegments={}", resources.length, allDocuments.size());
+            log.info("loaded faq markdown files={} documentSegments={}", resources.length, allDocuments.size());
         } catch (IOException e) {
             log.error("帮助中心 Markdown 加载失败", e);
         }
