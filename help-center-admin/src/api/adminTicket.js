@@ -8,6 +8,14 @@ export function fetchTicket(id) {
   return request.get(`/help_center/admin/tickets/${id}`)
 }
 
-export function patchTicket(id, body) {
-  return request.patch(`/help_center/admin/tickets/${id}`, body)
+export function patchTicketStatus(id, body) {
+  return request.patch(`/help_center/admin/tickets/${id}/status`, body)
+}
+
+export function patchTicketInternalNote(id, body) {
+  return request.patch(`/help_center/admin/tickets/${id}/internal-note`, body)
+}
+
+export function patchTicketReply(id, body) {
+  return request.patch(`/help_center/admin/tickets/${id}/reply`, body)
 }

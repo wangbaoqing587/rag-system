@@ -60,8 +60,9 @@ public class HelpCenterTicket {
     @Column(name = "internal_note", columnDefinition = "TEXT")
     private String internalNote;
 
-    @Column(columnDefinition = "TEXT")
-    private String reply;
+    @Convert(converter = TicketReplyListJsonConverter.class)
+    @Column(name = "reply", columnDefinition = "json")
+    private List<TicketReply> replies;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

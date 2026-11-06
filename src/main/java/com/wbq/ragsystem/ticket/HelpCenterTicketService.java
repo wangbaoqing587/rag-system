@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,19 +78,47 @@ public class HelpCenterTicketService {
     }
 
     @Transactional
-    public HelpCenterTicket update(Long id, UpdateTicketRequest req) {
+    public HelpCenterTicket updateStatus(Long id, String status) {
+        if (status == null || status.isBlank()) {
+            throw new IllegalArgumentException("status required");
+        }
+        try {
+            TicketStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("status invalid");
+        }
         HelpCenterTicket ticket = get(id);
-        if (req.status() != null && !req.status().isBlank()) {
-            ticket.setStatus(req.status());
-        }
-        if (req.internalNote() != null) {
-            ticket.setInternalNote(req.internalNote());
-        }
-        if (req.reply() != null) {
-            ticket.setReply(req.reply());
-        }
+        ticket.setStatus(status);
         HelpCenterTicket saved = repository.save(ticket);
-        log.info("ticket updated id={} ticketNo={} status={}", saved.getId(), saved.getTicketNo(), saved.getStatus());
+        log.info("ticket status updated id={} ticketNo={} status={}", saved.getId(), saved.getTicketNo(), saved.getStatus());
+        return saved;
+    }
+
+    @Transactional
+    public HelpCenterTicket updateInternalNote(Long id, String internalNote) {
+        HelpCenterTicket ticket = get(id);
+        ticket.setInternalNote(internalNote != null ? internalNote : "");
+        HelpCenterTicket saved = repository.save(ticket);
+        log.info("ticket internalNote updated id={} ticketNo={}", saved.getId(), saved.getTicketNo());
+        return saved;
+    }
+
+    @Transactional
+    public HelpCenterTicket appendReply(Long id, String reply) {
+        if (reply == null || reply.isBlank()) {
+            throw new IllegalArgumentException("reply required");
+        }
+        HelpCenterTicket ticket = get(id);
+        List<TicketReply> list = ticket.getReplies();
+        if (list == null) {
+            list = new ArrayList<>();
+        } else {
+            list = new ArrayList<>(list);
+        }
+        list.add(new TicketReply(reply.trim(), Instant.now()));
+        ticket.setReplies(list);
+        HelpCenterTicket saved = repository.save(ticket);
+        log.info("ticket reply appended id={} ticketNo={} count={}", saved.getId(), saved.getTicketNo(), list.size());
         return saved;
     }
 

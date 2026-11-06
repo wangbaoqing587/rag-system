@@ -6,7 +6,10 @@ import com.wbq.ragsystem.ticket.HelpCenterTicket;
 import com.wbq.ragsystem.ticket.HelpCenterTicketService;
 import com.wbq.ragsystem.ticket.TicketCategory;
 import com.wbq.ragsystem.ticket.TicketNotFoundException;
-import com.wbq.ragsystem.ticket.UpdateTicketRequest;
+import com.wbq.ragsystem.ticket.TicketReply;
+import com.wbq.ragsystem.ticket.UpdateInternalNoteBody;
+import com.wbq.ragsystem.ticket.UpdateReplyBody;
+import com.wbq.ragsystem.ticket.UpdateStatusBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,10 +52,28 @@ public class AdminTicketController {
         return toDetail(ticketService.get(id));
     }
 
-    @PatchMapping("/{id}")
-    public Map<String, Object> update(@PathVariable Long id, @RequestBody UpdateTicketRequest body) {
-        log.info("admin ticket update id={} status={}", id, body.status());
-        return toDetail(ticketService.update(id, body));
+    @PatchMapping("/{id}/status")
+    public Map<String, Object> updateStatus(@PathVariable Long id, @RequestBody UpdateStatusBody body) {
+        log.info("admin ticket status id={} status={}", id, body.status());
+        return toDetail(ticketService.updateStatus(id, body.status()));
+    }
+
+    @PatchMapping("/{id}/internal-note")
+    public Map<String, Object> updateInternalNote(@PathVariable Long id, @RequestBody UpdateInternalNoteBody body) {
+        log.info("admin ticket internalNote id={}", id);
+        return toDetail(ticketService.updateInternalNote(id, body.internalNote()));
+    }
+
+    @PatchMapping("/{id}/reply")
+    public Map<String, Object> updateReply(@PathVariable Long id, @RequestBody UpdateReplyBody body) {
+        log.info("admin ticket reply id={}", id);
+        return toDetail(ticketService.appendReply(id, body.reply()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> badRequest(IllegalArgumentException e) {
+        return Map.of("message", e.getMessage());
     }
 
     @ExceptionHandler(TicketNotFoundException.class)
@@ -81,13 +102,25 @@ public class AdminTicketController {
         Map<String, Object> m = toSummary(t);
         m.put("chatId", t.getChatId());
         m.put("internalNote", t.getInternalNote());
-        m.put("reply", t.getReply());
+        m.put("replies", toReplyMaps(t.getReplies()));
         m.put("product", t.getProduct());
         m.put("locale", t.getLocale());
         m.put("updatedAt", t.getUpdatedAt());
         m.put("chatTranscript", parseTranscript(t.getChatTranscript()));
         m.put("attachments", t.getAttachments() != null ? t.getAttachments() : List.of());
         return m;
+    }
+
+    private List<Map<String, Object>> toReplyMaps(List<TicketReply> replies) {
+        if (replies == null || replies.isEmpty()) {
+            return List.of();
+        }
+        return replies.stream().map(r -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("content", r.getContent());
+            item.put("createdAt", r.getCreatedAt());
+            return item;
+        }).toList();
     }
 
     private List<Map<String, Object>> parseTranscript(String json) {

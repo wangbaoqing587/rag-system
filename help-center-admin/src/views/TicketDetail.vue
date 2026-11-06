@@ -68,28 +68,86 @@
           </ul>
           <p v-else class="muted">无聊天记录</p>
         </section>
+
+        <section class="card block">
+          <h2 class="block-title">备注信息</h2>
+          <p v-if="ticket.internalNote?.trim()" class="record-body">{{ ticket.internalNote }}</p>
+          <p v-else class="muted">暂无备注</p>
+        </section>
+
+        <section class="card block">
+          <h2 class="block-title">回复信息</h2>
+          <ul v-if="ticket.replies?.length" class="reply-list">
+            <li v-for="(item, i) in ticket.replies" :key="i" class="reply-item">
+              <div class="reply-meta">
+                <span>#{{ i + 1 }}</span>
+                <span v-if="item.createdAt">{{ formatTime(item.createdAt) }}</span>
+              </div>
+              <p class="record-body">{{ item.content }}</p>
+            </li>
+          </ul>
+          <p v-else class="muted">暂无回复</p>
+        </section>
       </div>
 
-      <aside class="col-side">
-        <section class="card block sticky">
-          <h2 class="block-title">处理</h2>
-          <div class="field">
-            <span class="field-label">状态</span>
-            <AppSelect v-model="form.status" :options="statusOptions" />
-          </div>
-          <div class="field">
-            <span class="field-label">内部备注</span>
-            <textarea v-model="form.internalNote" class="textarea" rows="4" />
-          </div>
-          <div class="field">
-            <span class="field-label">对客回复摘要</span>
-            <textarea v-model="form.reply" class="textarea" rows="4" />
-          </div>
-          <button type="button" class="btn btn-primary save" :disabled="saving" @click="save">
-            {{ saving ? '保存中…' : '保存' }}
-          </button>
-          <p v-if="msg" class="alert alert-success">{{ msg }}</p>
-        </section>
+      <aside class="col-side sticky">
+        <div class="card side-stack">
+          <section class="side-panel">
+            <h2 class="side-title">状态</h2>
+            <AppSelect v-model="statusDraft" :options="statusOptions" />
+            <div class="side-foot">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                :disabled="statusSaving || statusDraft === ticket.status"
+                @click="saveStatus"
+              >
+                {{ statusSaving ? '更新中…' : '更新状态' }}
+              </button>
+              <p v-if="statusError" class="side-hint error">{{ statusError }}</p>
+              <p v-else-if="statusMsg" class="side-hint ok">{{ statusMsg }}</p>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h2 class="side-title">备注</h2>
+            <textarea v-model="noteDraft" class="textarea side-textarea" rows="3" />
+            <div class="side-foot">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                :disabled="noteSaving"
+                @click="saveNote"
+              >
+                {{ noteSaving ? '保存中…' : '保存备注' }}
+              </button>
+              <p v-if="noteError" class="side-hint error">{{ noteError }}</p>
+              <p v-else-if="noteMsg" class="side-hint ok">{{ noteMsg }}</p>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h2 class="side-title">回复</h2>
+            <textarea
+              v-model="replyDraft"
+              class="textarea side-textarea"
+              rows="3"
+              placeholder="请输入回复内容..."
+            />
+            <div class="side-foot">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                :disabled="replySaving || !replyDraft.trim()"
+                @click="saveReply"
+              >
+                {{ replySaving ? '提交中…' : '提交回复' }}
+              </button>
+              <p v-if="replyError" class="side-hint error">{{ replyError }}</p>
+              <p v-else-if="replyMsg" class="side-hint ok">{{ replyMsg }}</p>
+            </div>
+          </section>
+        </div>
       </aside>
     </div>
   </div>
@@ -97,7 +155,12 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { fetchTicket, patchTicket } from '../api/adminTicket.js'
+import {
+  fetchTicket,
+  patchTicketInternalNote,
+  patchTicketReply,
+  patchTicketStatus,
+} from '../api/adminTicket.js'
 import StatusTag from '../components/StatusTag.vue'
 import AppSelect from '../components/AppSelect.vue'
 
@@ -112,38 +175,113 @@ const props = defineProps({ id: String })
 
 const ticket = ref(null)
 const loading = ref(true)
-const saving = ref(false)
-const form = ref({ status: '', internalNote: '', reply: '' })
-const msg = ref('')
+const statusDraft = ref('')
+const noteDraft = ref('')
+const replyDraft = ref('')
 
-async function load() {
-  loading.value = true
-  msg.value = ''
+const statusSaving = ref(false)
+const statusMsg = ref('')
+const statusError = ref('')
+const noteSaving = ref(false)
+const noteMsg = ref('')
+const noteError = ref('')
+const replySaving = ref(false)
+const replyMsg = ref('')
+const replyError = ref('')
+
+function syncDrafts(data) {
+  statusDraft.value = data.status
+  noteDraft.value = data.internalNote || ''
+}
+
+function applyTicket(data, options = {}) {
+  const { clearReplyInput = false } = options
+  ticket.value = data
+  syncDrafts(data)
+  if (clearReplyInput) {
+    replyDraft.value = ''
+  }
+}
+
+function clearActionMsgs() {
+  statusMsg.value = ''
+  statusError.value = ''
+  noteMsg.value = ''
+  noteError.value = ''
+  replyMsg.value = ''
+  replyError.value = ''
+}
+
+async function load(options = {}) {
+  const { showLoading = true, clearMsg = true } = options
+  if (clearMsg) {
+    clearActionMsgs()
+  }
+  if (showLoading) {
+    loading.value = true
+  }
   try {
     const { data } = await fetchTicket(props.id)
     ticket.value = data
-    form.value = {
-      status: data.status,
-      internalNote: data.internalNote || '',
-      reply: data.reply || '',
+    syncDrafts(data)
+    replyDraft.value = ''
+  } catch (e) {
+    if (showLoading) {
+      statusError.value = e.response?.data?.message || e.message || '加载失败'
     }
+    throw e
   } finally {
-    loading.value = false
+    if (showLoading) {
+      loading.value = false
+    }
   }
 }
 
 onMounted(load)
 watch(() => props.id, load)
 
-async function save() {
-  saving.value = true
-  msg.value = ''
+async function saveStatus() {
+  statusSaving.value = true
+  statusMsg.value = ''
+  statusError.value = ''
   try {
-    await patchTicket(props.id, form.value)
-    msg.value = '已保存'
-    await load()
+    const { data } = await patchTicketStatus(props.id, { status: statusDraft.value })
+    applyTicket(data)
+    statusMsg.value = '状态已更新'
+  } catch (e) {
+    statusError.value = e.response?.data?.message || e.message || '更新失败'
   } finally {
-    saving.value = false
+    statusSaving.value = false
+  }
+}
+
+async function saveNote() {
+  noteSaving.value = true
+  noteMsg.value = ''
+  noteError.value = ''
+  try {
+    const { data } = await patchTicketInternalNote(props.id, { internalNote: noteDraft.value })
+    applyTicket(data)
+    noteMsg.value = '备注已保存'
+  } catch (e) {
+    noteError.value = e.response?.data?.message || e.message || '保存失败'
+  } finally {
+    noteSaving.value = false
+  }
+}
+
+async function saveReply() {
+  replySaving.value = true
+  replyMsg.value = ''
+  replyError.value = ''
+  try {
+    const { data } = await patchTicketReply(props.id, { reply: replyDraft.value.trim() })
+    applyTicket(data, { clearReplyInput: true })
+    replyMsg.value = '回复已提交'
+  } catch (e) {
+    replyError.value = e.response?.data?.message || e.message || '提交失败'
+  } finally {
+    replySaving.value = false
   }
 }
 
@@ -194,7 +332,7 @@ function formatTime(v) {
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 260px;
   gap: 20px;
   align-items: start;
 }
@@ -245,6 +383,39 @@ function formatTime(v) {
 .desc {
   white-space: pre-wrap;
   line-height: 1.55;
+}
+
+.record-body {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.reply-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reply-item {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fafbfc;
+}
+
+.reply-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .muted {
@@ -332,16 +503,56 @@ function formatTime(v) {
   top: 24px;
 }
 
-.field + .field {
-  margin-top: 14px;
+.side-stack {
+  overflow: hidden;
+  padding: 0;
 }
 
-.save {
+.side-panel {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.side-panel:last-child {
+  border-bottom: none;
+}
+
+.side-title {
+  margin: 0 0 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.side-textarea {
+  min-height: 72px;
+  font-size: 13px;
+}
+
+.side-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.side-hint {
+  margin: 0;
   width: 100%;
-  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
-.alert-success {
-  margin: 12px 0 0;
+.side-hint.ok {
+  color: var(--success);
+}
+
+.side-hint.error {
+  color: var(--danger);
 }
 </style>
